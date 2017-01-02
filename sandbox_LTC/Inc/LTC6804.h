@@ -8,7 +8,7 @@
 #ifndef LTC6804_H_
 #define LTC6804_H_
 
-
+#define TOTAL_IC 1		// total number of ICs in the system
 
 /*
 Precalculated pec table
@@ -118,9 +118,9 @@ void LTC6804_outloop();
 
 void LTC6804_inloop();
 
-int LTC_intialize();
+void LTC_initialize();
 
-void LTC_wakeup_idle();
+//void LTC_wakeup_idle();
 
 void LTC_wakeup_sleep();
 
@@ -175,7 +175,7 @@ void LTC_clearCell();
 //void LTC_clearStatus();
 
 //
-void run_command(uint32_t cmd)
+void run_command(uint32_t cmd);
 
 //
 void init_cfg();

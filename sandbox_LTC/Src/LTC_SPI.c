@@ -11,6 +11,7 @@
 
 extern SPI_HandleTypeDef hspi1;
 uint16_t size = 8;
+uint8_t RxBuffer[8];
 
 
 
@@ -24,10 +25,12 @@ void output_high(){
 	//pull ltc6804_cs high
 }
 
-int spi_send(uint8_t command){
+int spi_send(uint8_t *data, uint8_t size){
 	uint8_t TxBuffer[8];			//total_ic is one thus 8*total_ic = 8
 
-	TxBuffer[0] = command;
+	for(uint8_t i = 0; i<size; i++){
+		TxBuffer[i] = data[i];
+	}
 
 	HAL_StatusTypeDef errorcode;
 	errorcode = HAL_SPI_Transmit(&hspi1,TxBuffer,size,5000);	//timeout is 5 seconds(referenced from example spi code)
@@ -38,17 +41,9 @@ int spi_send(uint8_t command){
 	//2 - busy
 }
 
-int spi_receive(uint8_t command){
-
-
-	uint8_t RxBuffer[8];			//total_ic is one thus 8*total_ic = 8
-
-	RxBuffer[0] = command;
-
-
+int spi_receive(){
 	HAL_StatusTypeDef errorcode;
 	errorcode = HAL_SPI_Receive(&hspi1,RxBuffer,size,5000);	//timeout is 5 seconds(referenced from example spi code)
-
 
 	return (int)errorcode;
 	//0 - successful
