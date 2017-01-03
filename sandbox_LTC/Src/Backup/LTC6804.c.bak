@@ -219,7 +219,7 @@ void run_command(uint32_t cmd)
 		//Serial.println("transmit 'm' to quit");
 		LTC_wakeup_sleep();
 
-		LTC_writeConfig(TOTAL_IC,tx_cfg);
+		LTC_writeReg(TOTAL_IC,tx_cfg);
 		while (1){
 
 			LTC_wakeup_sleep();
