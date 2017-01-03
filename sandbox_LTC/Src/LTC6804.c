@@ -11,6 +11,7 @@
 #include "LTC6804.h"
 #include "LTC_SPI.h"
 #include "stm32l432xx.h"
+#include "serial.h"
 
 uint8_t ADCV[2];
 uint16_t cell_codes[TOTAL_IC][12];
@@ -156,6 +157,9 @@ void LTC_writeConfig(uint8_t total_ic,uint8_t config[][6])
 	//free(cmd);
 }
 
+
+
+
 void LTC_clearCell(){
 
 	uint8_t cmd[4];
@@ -230,7 +234,8 @@ void run_command(uint32_t cmd)
 			//delay(500);
 		}
     } else{
-    	printf("Incorrect Option");
+    	static uint8_t message[] = "Incorrect Option\n";
+    	Serial2_writeBuf(message);
     }
 }
 
@@ -250,22 +255,34 @@ void init_cfg()
 
 
 void print_cells(){
-/*
-	for (int current_ic = 0 ; current_ic < TOTAL_IC; current_ic++){
-		printf(" IC ");
-		printf(current_ic+1);	//in decimal
-		for(int i=0; i<12; i++)
+
+	for (uint8_t current_ic = 0 ; current_ic < TOTAL_IC; current_ic++){
+		static uint8_t message1[] = "IC";
+    	Serial2_writeBuf(message1);
+
+		Serial2_write(current_ic+1);	//in decimal
+
+		for(uint8_t i=0; i<12; i++)
 		{
-			printf(" C");
-			printf(i+1);	//in decimal
-			printf(":");
-			printf(cell_codes[current_ic][i]*0.0001,4);
-			printf(",");
+			static uint8_t message2[] = " C";
+	    	Serial2_writeBuf(message2);
+
+			Serial2_write(i+1);
+
+	    	static uint8_t message3[] = ":";
+	    	Serial2_writeBuf(message3);
+
+	    	static uint8_t message4[2];
+	    	message4[0] = (cell_codes[current_ic][i]) & 0xff;	//remember to time by 0.0001,4
+	    	message4[1] = (cell_codes[current_ic][i]) >> 8;
+	    	Serial2_writeBuf(message4);
+
+	    	message4[1] = (cell_codes[current_ic][i]) >> 8;
+	    	static uint8_t message5[] = ",";
+	    	Serial2_writeBuf(message5);
 		}
-		printf();
 	}
-	printf();
-	*/
+
 }
 
 
