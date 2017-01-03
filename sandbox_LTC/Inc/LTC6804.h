@@ -133,7 +133,7 @@ uint16_t pec15_calc(uint8_t len, uint8_t *data);
 void LTC_writeConfig(uint8_t total_ic,uint8_t config[][6]);
 
 //RDCFG
-//void LTC_readConfig();
+int LTC_readConfig(uint8_t total_ic, uint8_t r_config[][8]);
 
 //RDCVA
 void LTC_readReg(uint8_t reg,uint8_t total_ic,uint8_t *data);

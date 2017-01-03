@@ -18,6 +18,7 @@ uint16_t cell_codes[TOTAL_IC][12];
 uint16_t aux_codes[TOTAL_IC][6];
 uint8_t tx_cfg[TOTAL_IC][6];
 uint8_t rx_cfg[TOTAL_IC][8];
+extern uint8_t RxBuffer[8];
 
 
 void LTC6804_outloop(){
@@ -105,6 +106,7 @@ void LTC_readReg(uint8_t reg,uint8_t total_ic,uint8_t *data){
 		spi_send(cmd, 4);
 		output_high();
 	}
+
 }
 
 
@@ -152,12 +154,60 @@ void LTC_writeConfig(uint8_t total_ic,uint8_t config[][6])
 		cmd[3] = (uint8_t)(temp_pec);
 		output_low();
 		spi_send(cmd,4);
-    output_high();
+		output_high();
 	}
-	//free(cmd);
 }
 
 
+
+int LTC_readConfig(uint8_t total_ic, uint8_t r_config[][8]){
+	const uint8_t BYTES_IN_REG = 8;
+
+	uint8_t cmd[4];
+	//uint8_t *rx_data;
+	int8_t pec_error = 0;
+	uint16_t data_pec;
+	uint16_t received_pec;
+	//rx_data = (uint8_t *) malloc((8*total_ic)*sizeof(uint8_t));
+	//1
+	cmd[0] = 0x00;
+	cmd[1] = 0x02;
+	cmd[2] = 0x2b;
+	cmd[3] = 0x0A;
+
+	//2
+	LTC_wakeup_sleep (); //This will guarantee that the LTC6804 isoSPI port is awake. This command can be removed.
+	//3
+	for (int current_ic = 0; current_ic<total_ic; current_ic++){
+		cmd[0] = 0x80 + (current_ic<<3); //Setting address
+	    data_pec = pec15_calc(2, cmd);
+	    cmd[2] = (uint8_t)(data_pec >> 8);
+	    cmd[3] = (uint8_t)(data_pec);
+	    output_low();
+	    spi_send(cmd,4);
+	    spi_receive();
+	    output_high();
+	}
+
+	for (uint8_t current_ic = 0; current_ic < total_ic; current_ic++) //executes for each LTC6804 in the stack
+	{
+		//4.a
+	    for (uint8_t current_byte = 0; current_byte < BYTES_IN_REG; current_byte++)
+	    {
+	    	r_config[current_ic][current_byte] = RxBuffer[current_byte + (current_ic*BYTES_IN_REG)];
+	    }
+	    //4.b
+	    received_pec = (r_config[current_ic][6]<<8) + r_config[current_ic][7];
+	    data_pec = pec15_calc(6, &r_config[current_ic][0]);
+	    if (received_pec != data_pec)
+	    {
+	    	pec_error = -1;
+	    }
+	 }
+	 //5
+	 return(pec_error);
+
+}
 
 
 void LTC_clearCell(){
@@ -182,8 +232,6 @@ void LTC_clearCell(){
 	spi_send(cmd,4);
 	output_high();
 }
-
-
 
 
 
