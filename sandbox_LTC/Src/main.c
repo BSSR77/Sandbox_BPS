@@ -36,6 +36,8 @@
 
 /* USER CODE BEGIN Includes */
 // NEW MAIN FILE!
+#include "serial.h"
+#include "LTC6804.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -89,7 +91,8 @@ int main(void)
   MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
-
+  Serial2_begin();
+  LTC6804();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -97,7 +100,7 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-
+	  run_command(1);
   /* USER CODE BEGIN 3 */
 
   }

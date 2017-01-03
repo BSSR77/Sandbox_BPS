@@ -9,7 +9,7 @@
 #define LTC_SPI_H_
 
 #include "stm32l4xx_hal.h"
-#include "main.h"
+//#include "main.h"
 
 void output_low();
 

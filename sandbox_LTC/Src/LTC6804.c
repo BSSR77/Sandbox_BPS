@@ -21,7 +21,7 @@ uint8_t rx_cfg[TOTAL_IC][8];
 extern uint8_t RxBuffer[8];
 
 
-void LTC6804_outloop(){
+void LTC6804(){
 	LTC_initialize();
 	init_cfg();
 }
@@ -34,7 +34,9 @@ void LTC6804_inloop(){
 }
 
 void LTC_initialize(){
+
 	output_low();
+
 	output_high();
 
 
@@ -48,7 +50,7 @@ void LTC_initialize(){
 
 
 
-void LTC_startadc(){
+void LTC_startADC(){
 
 	uint8_t command[4];
 	uint16_t temp_pec;
@@ -246,7 +248,7 @@ void wakeup_idle()
 
 void LTC_wakeup_sleep()
 {
-  	output_low();
+	output_low();
   	//delayUS_ASM(300); // Twake = 100us, to start, wait for 3xTwake
   	output_high();
 }

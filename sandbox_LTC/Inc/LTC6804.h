@@ -45,9 +45,9 @@ select the adc conversion mode
 should always run the device at 7khz(normal mode)
 */
 
-uint8_t modeFast = 0x1;
-uint8_t	modeNormal = 0x2;
-uint8_t	modeFiltered = 0x3;
+//static const uint8_t 	modeFast = 0x1;
+static const uint8_t	modeNormal = 0x2;
+//static uint8_t	modeFiltered = 0x3;
 
 
 
@@ -55,13 +55,13 @@ uint8_t	modeFiltered = 0x3;
 define cell selection CH[2:0] used in commands
 */
 
-uint8_t cellSelect_all = 0x00;
-uint8_t cellSelect_os = 0x01;		//cell one and cell seven
-uint8_t cellSelect_te = 0x02;		//cell two and cell eight
-uint8_t cellSelect_tn = 0x03;		//cell three and cell nine
-uint8_t cellSelect_ft = 0x04;	//cell four and cell ten
-uint8_t cellSelect_fe = 0x05;	//cell five and cell eleven
-uint8_t cellSelect_st = 0x06;	//cell six and cell twelve
+static const uint8_t cellSelect_all = 0x00;
+//static uint8_t cellSelect_os = 0x01;		//cell one and cell seven
+//static uint8_t cellSelect_te = 0x02;		//cell two and cell eight
+//static uint8_t cellSelect_tn = 0x03;		//cell three and cell nine
+//static uint8_t cellSelect_ft = 0x04;		//cell four and cell ten
+//static uint8_t cellSelect_fe = 0x05;		//cell five and cell eleven
+//static uint8_t cellSelect_st = 0x06;		//cell six and cell twelve
 
 
 
@@ -69,8 +69,8 @@ uint8_t cellSelect_st = 0x06;	//cell six and cell twelve
 
 */
 
-uint8_t selfTestFirst = 0x0;
-uint8_t selftTestSecond = 0x1;
+//static uint8_t selfTestFirst = 0x0;
+//static uint8_t selftTestSecond = 0x1;
 
 
 /*
@@ -78,8 +78,8 @@ define discharge permit
 since the device uses passive cell balancing, should always be nah
 */
 
-uint8_t notdischarge = 0x0;
-uint8_t discharge = 0x1;
+static const uint8_t notdischarge = 0x0;
+//static uint8_t discharge = 0x1;
 
 
 
@@ -87,8 +87,8 @@ uint8_t discharge = 0x1;
 Pull-Up/Pull-Down Current for Open Wire Conversion
 */
 
-uint8_t pulldown = 0x0;
-uint8_t pullup = 0x1;
+//static uint8_t pulldown = 0x0;
+//static uint8_t pullup = 0x1;
 
 
 
@@ -114,7 +114,7 @@ struct statusGroup{
 
 
 //define functions
-void LTC6804_outloop();
+void LTC6804();
 
 void LTC6804_inloop();
 
