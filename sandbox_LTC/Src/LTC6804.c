@@ -74,7 +74,9 @@ void LTC_startADC(){
 
 }
 
-void LTC_readReg(uint8_t reg,uint8_t total_ic,uint8_t *data){
+
+
+void LTC_readReg_brief(uint8_t reg,uint8_t total_ic,uint8_t *data){
 
 	uint8_t cmd[4];
 	uint16_t temp_pec;
@@ -108,7 +110,78 @@ void LTC_readReg(uint8_t reg,uint8_t total_ic,uint8_t *data){
 		spi_send(cmd, 4);
 		output_high();
 	}
+}
 
+int LTC_readReg_complete(uint8_t reg,uint8_t total_ic,uint8_t *data){
+	const uint8_t NUM_RX_BYT = 8;
+	const uint8_t BYT_IN_REG = 6;
+	const uint8_t CELL_IN_REG = 3;
+
+	uint8_t cell_data[8];
+	int8_t pec_error = 0;
+	uint16_t parsed_cell;
+	uint16_t received_pec;
+	uint16_t data_pec;
+	uint8_t data_counter=0; //data counter
+	//cell_data = (uint8_t *) malloc((NUM_RX_BYT*total_ic)*sizeof(uint8_t));
+	//1.a
+	if (reg == 0){
+		//a.i
+	    for (uint8_t cell_reg = 1; cell_reg<5; cell_reg++) {              //executes once for each of the LTC6804 cell voltage registers
+
+	    	data_counter = 0;
+	    	LTC_readReg_brief(cell_reg, total_ic,cell_data);
+	    	for (uint8_t current_ic = 0 ; current_ic < total_ic; current_ic++){ // executes for every LTC6804 in the stack
+
+	    		// current_ic is used as an IC counter
+	    		//a.ii
+	    		for (uint8_t current_cell = 0; current_cell<CELL_IN_REG; current_cell++){                  // This loop parses the read back data. Loops
+
+	    			// once for each cell voltages in the register
+	    			parsed_cell = cell_data[data_counter] + (cell_data[data_counter + 1] << 8);
+	    			cell_codes[current_ic][current_cell  + ((cell_reg - 1) * CELL_IN_REG)] = parsed_cell;
+	    			data_counter = data_counter + 2;
+	    		}
+	    		//a.iii
+	    		received_pec = (cell_data[data_counter] << 8) + cell_data[data_counter+1];
+	    		data_pec = pec15_calc(BYT_IN_REG, &cell_data[current_ic * NUM_RX_BYT ]);
+
+	    		if (received_pec != data_pec){
+	    			pec_error--;//pec_error = -1;
+	    		}
+
+	    		data_counter=data_counter+2;
+	      }
+	    }
+	  }
+	//1.b
+	  else
+	  {
+	    //b.i
+
+	    	LTC_readReg_brief(reg, total_ic,cell_data);
+	    	for (uint8_t current_ic = 0 ; current_ic < total_ic; current_ic++) // executes for every LTC6804 in the stack
+	    	{
+			  // current_ic is used as an IC counter
+			  //b.ii
+	    		for (uint8_t current_cell = 0; current_cell < CELL_IN_REG; current_cell++)                    // This loop parses the read back data. Loops
+	    		{
+	    			// once for each cell voltage in the register
+	    			parsed_cell = cell_data[data_counter] + (cell_data[data_counter+1]<<8);
+	    			cell_codes[current_ic][current_cell + ((reg - 1) * CELL_IN_REG)] = 0x0000FFFF & parsed_cell;
+	    			data_counter= data_counter + 2;
+	    		}
+	    		//b.iii
+	    		received_pec = (cell_data[data_counter] << 8 )+ cell_data[data_counter + 1];
+	    		data_pec = pec15_calc(BYT_IN_REG, &cell_data[current_ic * NUM_RX_BYT * (reg-1)]);
+
+	    		if (received_pec != data_pec){
+
+	    			pec_error--;//pec_error = -1;
+	      }
+	    }
+	  }
+	  return(pec_error);
 }
 
 
@@ -212,6 +285,10 @@ int LTC_readConfig(uint8_t total_ic, uint8_t r_config[][8]){
 }
 
 
+
+
+
+
 void LTC_clearCell(){
 
 	uint8_t cmd[4];
@@ -246,10 +323,13 @@ void wakeup_idle()
 }*/
 
 
+
+
+
 void LTC_wakeup_sleep()
 {
 	output_low();
-  	//delayUS_ASM(300); // Twake = 100us, to start, wait for 3xTwake
+  	delayUS_ASM(300); // Twake = 100us, to start, wait for 3xTwake
   	output_high();
 }
 
@@ -267,22 +347,31 @@ uint16_t pec15_calc(uint8_t len, uint8_t *data)
   	return(remainder*2);//The CRC15 has a 0 in the LSB so the remainder must be multiplied by 2
 }
 
+
+
+
+
 void run_command(uint32_t cmd)
 {
 	if(cmd == 1){
 		//Serial.println("transmit 'm' to quit");
 		LTC_wakeup_sleep();
-
 		LTC_writeConfig(TOTAL_IC,tx_cfg);
-		while (1){
 
-			LTC_wakeup_sleep();
-			LTC_startADC();
-			//delay(10);
-			LTC_wakeup_sleep();
-			print_cells();
-			//delay(500);
+		LTC_wakeup_sleep();
+		LTC_startADC();
+		HAL_Delay(10);
+		LTC_wakeup_sleep();
+		uint16_t errorcode;
+		errorcode = LTC_readReg_complete(0, TOTAL_IC,cell_codes);
+
+		if (errorcode == -1){
+			static uint8_t mesg[] = "A PEC error was detected in the received data";
+			Serial2_writeBuf(mesg);
 		}
+
+		print_cells();
+		HAL_Delay(500);
     } else{
     	static uint8_t message[] = "Incorrect Option\n";
     	Serial2_writeBuf(message);

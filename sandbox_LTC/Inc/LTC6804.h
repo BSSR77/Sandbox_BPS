@@ -135,8 +135,11 @@ void LTC_writeConfig(uint8_t total_ic,uint8_t config[][6]);
 //RDCFG
 int LTC_readConfig(uint8_t total_ic, uint8_t r_config[][8]);
 
-//RDCVA
-void LTC_readReg(uint8_t reg,uint8_t total_ic,uint8_t *data);
+//RDCV_breifly read the voltages and stores it into the global variables declared in LTC6804.c
+void LTC_readReg_brief(uint8_t reg,uint8_t total_ic,uint8_t *data);
+
+//RDCV_complete
+int LTC_readReg_complete(uint8_t reg,uint8_t total_ic,uint8_t *data);
 
 //RDCVB
 //void LTC_readRegB();

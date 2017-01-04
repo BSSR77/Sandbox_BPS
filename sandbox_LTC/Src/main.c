@@ -100,7 +100,10 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-	  run_command(1);
+	  if(Serial2_available()){
+		  run_command(1);
+	  }
+
   /* USER CODE BEGIN 3 */
 
   }
