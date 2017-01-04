@@ -404,20 +404,28 @@ void print_cells(){
 
 		for(uint8_t i=0; i<12; i++)
 		{
+			Serial2_write('\n');
+
 			static uint8_t message2[] = " C";
 	    	Serial2_writeBuf(message2);
 
-			Serial2_write(i+1+30);
+			if(i > 9){
+				Serial2_write(1+48);
+				Serial2_write(i-9+48);
+			}else{
+				Serial2_write(i+1+48);
+			}
 
-	    	Serial2_writeBuf(':');
+	    	Serial2_write(':');
 
 	    	static uint8_t message4[2];
 	    	message4[0] = (cell_codes[current_ic][i]) & 0xff;	//remember to time by 0.0001,4
 	    	message4[1] = (cell_codes[current_ic][i]) >> 8;
 	    	Serial2_writeBuf(message4);
 
-	    	Serial2_writeBuf(',');
+	    	Serial2_write(',');
 		}
+		Serial2_write('\n');
 	}
 
 }
