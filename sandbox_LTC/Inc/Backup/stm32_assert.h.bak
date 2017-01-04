@@ -1,9 +1,9 @@
 /**
   ******************************************************************************
-  * File Name          : main.h
-  * Description        : This file contains the common defines of the application
+  * @file    stm32_assert.h
+  * @brief   STM32 assert file.
   ******************************************************************************
-  *
+   *
   * COPYRIGHT(c) 2017 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
@@ -30,46 +30,39 @@
   *
   ******************************************************************************
   */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
-  /* Includes ------------------------------------------------------------------*/
-#include "stm32l4xx_ll_dma.h"
-#include "stm32l4xx_ll_bus.h"
-#include "stm32l4xx_ll_cortex.h"
-#include "stm32l4xx_ll_rcc.h"
-#include "stm32l4xx_ll_system.h"
-#include "stm32l4xx_ll_utils.h"
-#include "stm32l4xx_ll_pwr.h"
-#include "stm32l4xx_ll_gpio.h"
+#ifndef __STM32_ASSERT_H
+#define __STM32_ASSERT_H
 
-#include "stm32l4xx_ll_exti.h"
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private define ------------------------------------------------------------*/
-
-#define VCP_TX_Pin GPIO_PIN_2
-#define VCP_TX_GPIO_Port GPIOA
-#define LTC_CS_Pin GPIO_PIN_10
-#define LTC_CS_GPIO_Port GPIOA
-#define VCP_RX_Pin GPIO_PIN_15
-#define VCP_RX_GPIO_Port GPIOA
-#define LED3_GPIO_Pin GPIO_PIN_3
-#define LED3_GPIO_GPIO_Port GPIOB
-/* USER CODE BEGIN Private defines */
-
-/* USER CODE END Private defines */
-
+/* Exported types ------------------------------------------------------------*/
+/* Exported constants --------------------------------------------------------*/
+/* Includes ------------------------------------------------------------------*/
+/* Exported macro ------------------------------------------------------------*/
+#ifdef  USE_FULL_ASSERT
 /**
-  * @}
-  */ 
+  * @brief  The assert_param macro is used for function's parameters check.
+  * @param  expr: If expr is false, it calls assert_failed function
+  *         which reports the name of the source file and the source
+  *         line number of the call that failed.
+  *         If expr is true, it returns no value.
+  * @retval None
+  */
+  #define assert_param(expr) ((expr) ? (void)0U : assert_failed((uint8_t *)__FILE__, __LINE__))
+/* Exported functions ------------------------------------------------------- */
+  void assert_failed(uint8_t* file, uint32_t line);
+#else
+  #define assert_param(expr) ((void)0U)
+#endif /* USE_FULL_ASSERT */
 
-/**
-  * @}
-*/ 
+#ifdef __cplusplus
+}
+#endif
 
-#endif /* __MAIN_H */
+#endif /* __STM32_ASSERT_H */
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
