@@ -398,6 +398,7 @@ void print_cells(){
 	for (uint8_t current_ic = 0 ; current_ic < TOTAL_IC; current_ic++){
 		static uint8_t message1[] = "IC";
     	Serial2_writeBuf(message1);
+    	Serial2_write('\n');
 
 		Serial2_write(current_ic+1);	//in decimal
 
@@ -406,19 +407,16 @@ void print_cells(){
 			static uint8_t message2[] = " C";
 	    	Serial2_writeBuf(message2);
 
-			Serial2_write(i+1);
+			Serial2_write(i+1+30);
 
-	    	static uint8_t message3[] = ":";
-	    	Serial2_writeBuf(message3);
+	    	Serial2_writeBuf(':');
 
 	    	static uint8_t message4[2];
 	    	message4[0] = (cell_codes[current_ic][i]) & 0xff;	//remember to time by 0.0001,4
 	    	message4[1] = (cell_codes[current_ic][i]) >> 8;
 	    	Serial2_writeBuf(message4);
 
-	    	message4[1] = (cell_codes[current_ic][i]) >> 8;
-	    	static uint8_t message5[] = ",";
-	    	Serial2_writeBuf(message5);
+	    	Serial2_writeBuf(',');
 		}
 	}
 
