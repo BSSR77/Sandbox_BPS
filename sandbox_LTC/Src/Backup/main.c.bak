@@ -92,7 +92,12 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   Serial2_begin();
+  //HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
   LTC6804();
+  Serial2_write('\n');
+  Serial2_write('\n');
+  uint8_t setup_msg1[] = "setup complete";
+  Serial2_writeBuf(setup_msg1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -100,10 +105,16 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-	  if(Serial2_available()){
-		  run_command(1);
-	  }
-
+	  uint8_t main_msg1[] = "loop starting...";
+	  Serial2_write('\n');
+	  Serial2_write('\n');
+	  Serial2_writeBuf(main_msg1);
+	  run_command(1);
+	  Serial2_write('\n');
+	  uint8_t main_msg2[] = "loop complete";
+	  Serial2_write('\n');
+	  Serial2_write('\n');
+	  Serial2_writeBuf(main_msg2);
   /* USER CODE BEGIN 3 */
 
   }

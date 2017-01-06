@@ -92,7 +92,12 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   Serial2_begin();
+  //HAL_GPIO_WritePin(LTC_CS_GPIO_Port, LTC_CS_Pin, GPIO_PIN_SET);
   LTC6804();
+  Serial2_write('\n');
+  Serial2_write('\n');
+  uint8_t setup_msg1[] = "setup complete";
+  Serial2_writeBuf(setup_msg1);
   /* USER CODE END 2 */
 
   /* Infinite loop */

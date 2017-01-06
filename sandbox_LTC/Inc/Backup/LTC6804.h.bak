@@ -126,7 +126,6 @@ void LTC_wakeup_sleep();
 
 uint16_t pec15_calc(uint8_t len, uint8_t *data);
 
-
 //convert commands into function for easy access
 
 //WRCFG
@@ -139,7 +138,7 @@ int LTC_readConfig(uint8_t total_ic, uint8_t r_config[][8]);
 void LTC_readReg_brief(uint8_t reg,uint8_t total_ic,uint8_t *data);
 
 //RDCV_complete
-int LTC_readReg_complete(uint8_t reg,uint8_t total_ic,uint8_t *data);
+int LTC_readReg_complete(uint8_t reg,uint8_t total_ic,uint16_t cell_codes[][12]);
 
 //RDCVB
 //void LTC_readRegB();
@@ -179,6 +178,9 @@ void LTC_clearCell();
 
 //
 void run_command(uint32_t cmd);
+
+//prints float
+void Serial2_print(float number);
 
 //
 void init_cfg();

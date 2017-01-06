@@ -24,6 +24,7 @@ extern uint8_t RxBuffer[8];
 void LTC6804(){
 	LTC_initialize();
 	init_cfg();
+	LTC_clearCell();
 }
 
 void LTC6804_inloop(){
@@ -34,11 +35,6 @@ void LTC6804_inloop(){
 }
 
 void LTC_initialize(){
-
-	output_low();
-
-	output_high();
-
 
 	uint8_t md_bits;
 	md_bits = (modeNormal & 0x02) >> 1;
@@ -69,7 +65,26 @@ void LTC_startADC(){
 
 	//4
 	output_low();
-	spi_send(command,4);
+
+
+	Serial2_write('\n');
+
+	int errorcode = spi_send(command,4);
+	if(errorcode == 0){
+		uint8_t adc_msg1[] = "startADC successful";
+		Serial2_writeBuf(adc_msg1);
+	}else if(errorcode == 1){
+		uint8_t adc_msg2[] = "startADC unsuccessful";
+		Serial2_writeBuf(adc_msg2);
+	}else if(errorcode == 2){
+		uint8_t adc_msg3[] = "startADC spi_busy";
+		Serial2_writeBuf(adc_msg3);
+	}else{
+		uint8_t adc_msg4[] = "startADC wth is this";
+		Serial2_writeBuf(adc_msg4);
+	}
+
+
 	output_high();
 
 }
@@ -80,6 +95,7 @@ void LTC_readReg_brief(uint8_t reg,uint8_t total_ic,uint8_t *data){
 
 	uint8_t cmd[4];
 	uint16_t temp_pec;
+	int errorcode;
 
 	if (reg == 1)
 	{
@@ -107,12 +123,35 @@ void LTC_readReg_brief(uint8_t reg,uint8_t total_ic,uint8_t *data){
 		cmd[2] = (uint8_t)(temp_pec >> 8);
 		cmd[3] = (uint8_t)(temp_pec);
 		output_low();
-		spi_send(cmd, 4);
+
+		Serial2_write('\n');
+
+		errorcode = spi_send(cmd, 4);
+		if(errorcode == 0){
+			uint8_t readReg1_msg1[] = "read_vReg successful";
+			Serial2_writeBuf(readReg1_msg1);
+		}else if(errorcode == 1){
+			uint8_t readReg1_msg2[] = "read_vReg unsuccessful";
+			Serial2_writeBuf(readReg1_msg2);
+			LTC_readReg_brief(reg, total_ic, data);
+		}else if(errorcode == 2){
+			uint8_t readReg1_msg3[] = "read_vReg spi_busy";
+			Serial2_writeBuf(readReg1_msg3);
+			LTC_readReg_brief(reg, total_ic, data);
+		}else{
+			uint8_t readReg1_msg4[] = "read_vReg wth is this";
+			Serial2_writeBuf(readReg1_msg4);
+			LTC_readReg_brief(reg, total_ic, data);
+		}
+
 		output_high();
+		for(int i = 0; i<8; i++){
+			data[i] = RxBuffer[i];
+		}
 	}
 }
 
-int LTC_readReg_complete(uint8_t reg,uint8_t total_ic,uint8_t *data){
+int LTC_readReg_complete(uint8_t reg,uint8_t total_ic,uint16_t cell_codes[][12]){
 	const uint8_t NUM_RX_BYT = 8;
 	const uint8_t BYT_IN_REG = 6;
 	const uint8_t CELL_IN_REG = 3;
@@ -130,7 +169,7 @@ int LTC_readReg_complete(uint8_t reg,uint8_t total_ic,uint8_t *data){
 	    for (uint8_t cell_reg = 1; cell_reg<5; cell_reg++) {              //executes once for each of the LTC6804 cell voltage registers
 
 	    	data_counter = 0;
-	    	LTC_readReg_brief(cell_reg, total_ic,cell_data);
+	    	LTC_readReg_brief(cell_reg,total_ic,cell_data);
 	    	for (uint8_t current_ic = 0 ; current_ic < total_ic; current_ic++){ // executes for every LTC6804 in the stack
 
 	    		// current_ic is used as an IC counter
@@ -228,7 +267,24 @@ void LTC_writeConfig(uint8_t total_ic,uint8_t config[][6])
 		cmd[2] = (uint8_t)(temp_pec >> 8);
 		cmd[3] = (uint8_t)(temp_pec);
 		output_low();
-		spi_send(cmd,4);
+
+		Serial2_write('\n');
+
+		int errorcode = spi_send(cmd, 4);
+		if(errorcode == 0){
+			uint8_t wConfig_msg1[] = "write_configuration successful";
+			Serial2_writeBuf(wConfig_msg1);
+		}else if(errorcode == 1){
+			uint8_t wConfig_msg2[] = "write_configuration unsuccessful";
+			Serial2_writeBuf(wConfig_msg2);
+		}else if(errorcode == 2){
+			uint8_t wConfig_msg3[] = "write_configuration spi_busy";
+			Serial2_writeBuf(wConfig_msg3);
+		}else{
+			uint8_t wConfig_msg4[] = "write_configuration wth is this";
+			Serial2_writeBuf(wConfig_msg4);
+		}
+
 		output_high();
 	}
 }
@@ -259,7 +315,24 @@ int LTC_readConfig(uint8_t total_ic, uint8_t r_config[][8]){
 	    cmd[2] = (uint8_t)(data_pec >> 8);
 	    cmd[3] = (uint8_t)(data_pec);
 	    output_low();
-	    spi_send(cmd,4);
+
+	    Serial2_write('\n');
+
+		int errorcode = spi_send(cmd, 4);
+		if(errorcode == 0){
+			uint8_t rConfig_msg1[] = "read_configuration successful";
+			Serial2_writeBuf(rConfig_msg1);
+		}else if(errorcode == 1){
+			uint8_t rConfig_msg2[] = "read_configuration unsuccessful";
+			Serial2_writeBuf(rConfig_msg2);
+		}else if(errorcode == 2){
+			uint8_t rConfig_msg3[] = "read_configuration spi_busy";
+			Serial2_writeBuf(rConfig_msg3);
+		}else{
+			uint8_t rConfig_msg4[] = "read_configuration wth is this";
+			Serial2_writeBuf(rConfig_msg4);
+		}
+
 	    spi_receive();
 	    output_high();
 	}
@@ -329,7 +402,8 @@ void wakeup_idle()
 void LTC_wakeup_sleep()
 {
 	output_low();
-  	delayUS_ASM(300); // Twake = 100us, to start, wait for 3xTwake
+  	//delayUS_ASM(300); // Twake = 100us, to start, wait for 3xTwake
+	HAL_Delay(1);
   	output_high();
 }
 
@@ -354,6 +428,7 @@ uint16_t pec15_calc(uint8_t len, uint8_t *data)
 void run_command(uint32_t cmd)
 {
 	if(cmd == 1){
+
 		//Serial.println("transmit 'm' to quit");
 		LTC_wakeup_sleep();
 		LTC_writeConfig(TOTAL_IC,tx_cfg);
@@ -362,19 +437,21 @@ void run_command(uint32_t cmd)
 		LTC_startADC();
 		HAL_Delay(10);
 		LTC_wakeup_sleep();
-		uint16_t errorcode;
-		errorcode = LTC_readReg_complete(0, TOTAL_IC,cell_codes);
-
-		if (errorcode == -1){
-			static uint8_t mesg[] = "A PEC error was detected in the received data";
-			Serial2_writeBuf(mesg);
-		}
+		int8_t errorcode = LTC_readReg_complete(0, TOTAL_IC,cell_codes);
 
 		print_cells();
+
+		if (errorcode < 0){
+			Serial2_write('\n');
+			static uint8_t runCmd_msg1[] = "A PEC error was detected in the received data";
+			Serial2_writeBuf(runCmd_msg1);
+		}
 		HAL_Delay(500);
+
     } else{
-    	static uint8_t message[] = "Incorrect Option\n";
-    	Serial2_writeBuf(message);
+    	Serial2_write('\n');
+    	static uint8_t runCmd_msg2[] = "Run Command: Incorrect Option\n";
+    	Serial2_writeBuf(runCmd_msg2);
     }
 }
 
@@ -396,6 +473,7 @@ void init_cfg()
 void print_cells(){
 
 	for (uint8_t current_ic = 0 ; current_ic < TOTAL_IC; current_ic++){
+		Serial2_write('\n');
 		static uint8_t message1[] = "IC";
     	Serial2_writeBuf(message1);
     	Serial2_write('\n');
@@ -409,7 +487,7 @@ void print_cells(){
 			static uint8_t message2[] = " C";
 	    	Serial2_writeBuf(message2);
 
-			if(i > 9){
+			if(i >= 9){
 				Serial2_write(1+48);
 				Serial2_write(i-9+48);
 			}else{
@@ -418,16 +496,43 @@ void print_cells(){
 
 	    	Serial2_write(':');
 
-	    	static uint8_t message4[2];
-	    	message4[0] = (cell_codes[current_ic][i]) & 0xff;	//remember to time by 0.0001,4
-	    	message4[1] = (cell_codes[current_ic][i]) >> 8;
-	    	Serial2_writeBuf(message4);
+	    	Serial2_print(cell_codes[current_ic][i]*0.0001);
+//	    	static float msgPro[2];
+//	    	msgPro[0] = (cell_codes[current_ic][i]) & 0xff;	//remember to time by 0.0001
+//	    	msgPro[1] = (cell_codes[current_ic][i]) >> 8;
+//	    	static float message4 [] = (char)(msgPro[0]*0.0001);
+//	    	Serial2_writeBuf(message4);
 
 	    	Serial2_write(',');
 		}
 		Serial2_write('\n');
 	}
 
+}
+
+
+void Serial2_print(float number){
+	number += 0.0005;	//prevent rounding issues
+	int integar, decimal;
+	uint8_t msg[9];
+
+	integar = number;
+	decimal = number*10000-number*10000;
+
+	for(int i = 0;i<4;i++){
+			msg[i] = decimal;
+			decimal = decimal%((3-i)*10);
+	}
+
+	for(int i = 5;i<9;i++){
+		msg[i] = decimal;
+		decimal = decimal%((8-i)*10);
+	}
+
+	for(int i = 0;i<9;i++){
+		if(i == 5)	Serial2_write('_');
+			Serial2_write(msg[i]);
+	}
 }
 
 

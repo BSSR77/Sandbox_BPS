@@ -8,6 +8,7 @@
 #include "LTC_SPI.h"
 #include "stm32l4xx_hal.h"
 #include "main.h"
+#include "serial.h"
 
 
 extern SPI_HandleTypeDef hspi1;
@@ -18,11 +19,17 @@ uint8_t RxBuffer[8];
 
 void output_low(){
 	HAL_GPIO_WritePin(LTC_CS_GPIO_Port , LTC_CS_Pin, GPIO_PIN_RESET);
+	//HAL_GPIO_WritePin(LTC_CS_GPIO_Port , LTC_CS_Pin, GPIO_PIN_SET);
+	//uint8_t outputmsg1[] = "output_low success";
+	//Serial2_writeBuf(outputmsg1);
 	//pull ltc6804_cs low
 }
 
 void output_high(){
 	HAL_GPIO_WritePin(LTC_CS_GPIO_Port , LTC_CS_Pin, GPIO_PIN_SET);
+	//HAL_GPIO_WritePin(LTC_CS_GPIO_Port , LTC_CS_Pin, GPIO_PIN_RESET);
+	//uint8_t outputmsg2[] = "output_high success";
+	//Serial2_writeBuf(outputmsg2);
 	//pull ltc6804_cs high
 }
 
