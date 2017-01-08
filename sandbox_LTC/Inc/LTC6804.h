@@ -120,13 +120,29 @@ void LTC6804_inloop();
 
 void LTC_initialize();
 
-//void LTC_wakeup_idle();
+void LTC_wakeup_idle();
 
 void LTC_wakeup_sleep();
 
 uint16_t pec15_calc(uint8_t len, uint8_t *data);
 
-//convert commands into function for easy access
+//
+void print_cells();
+
+//
+void init_cfg();
+
+//prints float
+void Serial2_print(float number);
+
+//
+void run_command(uint32_t cmd);
+
+
+
+/*****convert commands into function for easy access*****/
+
+
 
 //WRCFG
 void LTC_writeConfig(uint8_t total_ic,uint8_t config[][6]);
@@ -176,16 +192,9 @@ void LTC_clearCell();
 //CLRSTAT
 //void LTC_clearStatus();
 
-//
-void run_command(uint32_t cmd);
 
-//prints float
-void Serial2_print(float number);
 
-//
-void init_cfg();
 
-//
-void print_cells();
+
 
 #endif /* LTC6804_H_ */

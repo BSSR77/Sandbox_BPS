@@ -25,13 +25,15 @@ void LTC6804(){
 	LTC_initialize();
 	init_cfg();
 	LTC_clearCell();
+	LTC_wakeup_sleep();
+	LTC_writeConfig(TOTAL_IC,tx_cfg);
 }
 
 void LTC6804_inloop(){
-	// TODO: Fix this part to properly respond to commands
-#ifdef DEBUG
+
+	LTC_wakeup_sleep();
 	run_command(1);
-#endif
+
 }
 
 void LTC_initialize(){
@@ -51,36 +53,29 @@ void LTC_startADC(){
 	uint8_t command[4];
 	uint16_t temp_pec;
 
-	//1
 	command[0] = ADCV[0];
 	command[1] = ADCV[1];
 
-	//2
 	temp_pec = pec15_calc(2, ADCV);
 	command[2] = (uint8_t)(temp_pec >> 8);
 	command[3] = (uint8_t)(temp_pec);
 
-	//3
-	LTC_wakeup_sleep (); //This will guarantee that the LTC6804 SPI port is awake. This command can be removed.
+	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 
-	//4
 	output_low();
-
-
-	Serial2_write('\n');
 
 	int errorcode = spi_send(command,4);
 	if(errorcode == 0){
-		uint8_t adc_msg1[] = "startADC successful";
+		uint8_t adc_msg1[] = " adc yes ";
 		Serial2_writeBuf(adc_msg1);
 	}else if(errorcode == 1){
-		uint8_t adc_msg2[] = "startADC unsuccessful";
+		uint8_t adc_msg2[] = " adc no ";
 		Serial2_writeBuf(adc_msg2);
 	}else if(errorcode == 2){
-		uint8_t adc_msg3[] = "startADC spi_busy";
+		uint8_t adc_msg3[] = " adc busy ";
 		Serial2_writeBuf(adc_msg3);
 	}else{
-		uint8_t adc_msg4[] = "startADC wth is this";
+		uint8_t adc_msg4[] = " adc wth ";
 		Serial2_writeBuf(adc_msg4);
 	}
 
@@ -114,7 +109,7 @@ void LTC_readReg_brief(uint8_t reg,uint8_t total_ic,uint8_t *data){
 		cmd[1] = 0x0A;
 	}
 
-	LTC_wakeup_sleep (); //This will guarantee that the LTC6804 isoSPI port is awake. This command can be removed.
+	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 
 	for (int current_ic = 0; current_ic<total_ic; current_ic++)
 	{
@@ -124,22 +119,20 @@ void LTC_readReg_brief(uint8_t reg,uint8_t total_ic,uint8_t *data){
 		cmd[3] = (uint8_t)(temp_pec);
 		output_low();
 
-		Serial2_write('\n');
-
 		errorcode = spi_send(cmd, 4);
 		if(errorcode == 0){
-			uint8_t readReg1_msg1[] = "read_vReg successful";
+			uint8_t readReg1_msg1[] = " RDCV yes ";
 			Serial2_writeBuf(readReg1_msg1);
 		}else if(errorcode == 1){
-			uint8_t readReg1_msg2[] = "read_vReg unsuccessful";
+			uint8_t readReg1_msg2[] = " RDCV no ";
 			Serial2_writeBuf(readReg1_msg2);
 			LTC_readReg_brief(reg, total_ic, data);
 		}else if(errorcode == 2){
-			uint8_t readReg1_msg3[] = "read_vReg spi_busy";
+			uint8_t readReg1_msg3[] = " RDCV busy ";
 			Serial2_writeBuf(readReg1_msg3);
 			LTC_readReg_brief(reg, total_ic, data);
 		}else{
-			uint8_t readReg1_msg4[] = "read_vReg wth is this";
+			uint8_t readReg1_msg4[] = " RDCV wth ";
 			Serial2_writeBuf(readReg1_msg4);
 			LTC_readReg_brief(reg, total_ic, data);
 		}
@@ -190,37 +183,37 @@ int LTC_readReg_complete(uint8_t reg,uint8_t total_ic,uint16_t cell_codes[][12])
 	    		}
 
 	    		data_counter=data_counter+2;
-	      }
+	    	}
 	    }
-	  }
+	}
 	//1.b
-	  else
-	  {
+	else
+	{
 	    //b.i
 
-	    	LTC_readReg_brief(reg, total_ic,cell_data);
-	    	for (uint8_t current_ic = 0 ; current_ic < total_ic; current_ic++) // executes for every LTC6804 in the stack
-	    	{
+		LTC_readReg_brief(reg, total_ic,cell_data);
+		for (uint8_t current_ic = 0 ; current_ic < total_ic; current_ic++) // executes for every LTC6804 in the stack
+		{
 			  // current_ic is used as an IC counter
 			  //b.ii
-	    		for (uint8_t current_cell = 0; current_cell < CELL_IN_REG; current_cell++)                    // This loop parses the read back data. Loops
-	    		{
-	    			// once for each cell voltage in the register
-	    			parsed_cell = cell_data[data_counter] + (cell_data[data_counter+1]<<8);
-	    			cell_codes[current_ic][current_cell + ((reg - 1) * CELL_IN_REG)] = 0x0000FFFF & parsed_cell;
-	    			data_counter= data_counter + 2;
-	    		}
+			for (uint8_t current_cell = 0; current_cell < CELL_IN_REG; current_cell++)                    // This loop parses the read back data. Loops
+			{
+				// once for each cell voltage in the register
+				parsed_cell = cell_data[data_counter] + (cell_data[data_counter+1]<<8);
+				cell_codes[current_ic][current_cell + ((reg - 1) * CELL_IN_REG)] = 0x0000FFFF & parsed_cell;
+				data_counter= data_counter + 2;
+			}
 	    		//b.iii
-	    		received_pec = (cell_data[data_counter] << 8 )+ cell_data[data_counter + 1];
-	    		data_pec = pec15_calc(BYT_IN_REG, &cell_data[current_ic * NUM_RX_BYT * (reg-1)]);
+			received_pec = (cell_data[data_counter] << 8 )+ cell_data[data_counter + 1];
+			data_pec = pec15_calc(BYT_IN_REG, &cell_data[current_ic * NUM_RX_BYT * (reg-1)]);
 
-	    		if (received_pec != data_pec){
+			if (received_pec != data_pec){
 
-	    			pec_error--;//pec_error = -1;
-	      }
+				pec_error--;//pec_error = -1;
+			}
 	    }
-	  }
-	  return(pec_error);
+	}
+	return(pec_error);
 }
 
 
@@ -238,6 +231,8 @@ void LTC_writeConfig(uint8_t total_ic,uint8_t config[][6])
 	cmd[1] = 0x01;
 	cmd[2] = 0x3d;
 	cmd[3] = 0x6e;
+
+	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 
 	//2
 	cmd_index = 4;
@@ -268,20 +263,18 @@ void LTC_writeConfig(uint8_t total_ic,uint8_t config[][6])
 		cmd[3] = (uint8_t)(temp_pec);
 		output_low();
 
-		Serial2_write('\n');
-
 		int errorcode = spi_send(cmd, 4);
 		if(errorcode == 0){
-			uint8_t wConfig_msg1[] = "write_configuration successful";
+			uint8_t wConfig_msg1[] = " WRCFG yes ";
 			Serial2_writeBuf(wConfig_msg1);
 		}else if(errorcode == 1){
-			uint8_t wConfig_msg2[] = "write_configuration unsuccessful";
+			uint8_t wConfig_msg2[] = " WRCFG no ";
 			Serial2_writeBuf(wConfig_msg2);
 		}else if(errorcode == 2){
-			uint8_t wConfig_msg3[] = "write_configuration spi_busy";
+			uint8_t wConfig_msg3[] = " WRCFG busy ";
 			Serial2_writeBuf(wConfig_msg3);
 		}else{
-			uint8_t wConfig_msg4[] = "write_configuration wth is this";
+			uint8_t wConfig_msg4[] = " WRCFG wth ";
 			Serial2_writeBuf(wConfig_msg4);
 		}
 
@@ -307,7 +300,7 @@ int LTC_readConfig(uint8_t total_ic, uint8_t r_config[][8]){
 	cmd[3] = 0x0A;
 
 	//2
-	LTC_wakeup_sleep (); //This will guarantee that the LTC6804 isoSPI port is awake. This command can be removed.
+	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 	//3
 	for (int current_ic = 0; current_ic<total_ic; current_ic++){
 		cmd[0] = 0x80 + (current_ic<<3); //Setting address
@@ -316,20 +309,19 @@ int LTC_readConfig(uint8_t total_ic, uint8_t r_config[][8]){
 	    cmd[3] = (uint8_t)(data_pec);
 	    output_low();
 
-	    Serial2_write('\n');
 
 		int errorcode = spi_send(cmd, 4);
 		if(errorcode == 0){
-			uint8_t rConfig_msg1[] = "read_configuration successful";
+			uint8_t rConfig_msg1[] = " RDCFG yes ";
 			Serial2_writeBuf(rConfig_msg1);
 		}else if(errorcode == 1){
-			uint8_t rConfig_msg2[] = "read_configuration unsuccessful";
+			uint8_t rConfig_msg2[] = " RDCFG no ";
 			Serial2_writeBuf(rConfig_msg2);
 		}else if(errorcode == 2){
-			uint8_t rConfig_msg3[] = "read_configuration spi_busy";
+			uint8_t rConfig_msg3[] = " RDCFG busy ";
 			Serial2_writeBuf(rConfig_msg3);
 		}else{
-			uint8_t rConfig_msg4[] = "read_configuration wth is this";
+			uint8_t rConfig_msg4[] = " RDCFG wth ";
 			Serial2_writeBuf(rConfig_msg4);
 		}
 
@@ -367,36 +359,26 @@ void LTC_clearCell(){
 	uint8_t cmd[4];
 	uint16_t cmd_pec;
 
-	//1
 	cmd[0] = 0x07;
 	cmd[1] = 0x11;
-
-	//2
 	cmd_pec = pec15_calc(2, cmd);
 	cmd[2] = (uint8_t)(cmd_pec >> 8);
 	cmd[3] = (uint8_t)(cmd_pec );
 
-	//3
-	LTC_wakeup_sleep (); //This will guarantee that the LTC6804 isoSPI port is awake. This command can be removed.
+	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 
-	//4
 	output_low();
 	spi_send(cmd,4);
 	output_high();
 }
 
 
-
-/*
-void wakeup_idle()
+void LTC_wakeup_idle()
 {
   	output_low();
-  	//delayMicroseconds(10); //Guarantees the isoSPI will be in ready mode
+  	delayUS_ASM(10);	//Guarantees the isoSPI will be in ready mode(10 microseconds)
   	output_high();
-}*/
-
-
-
+}
 
 
 void LTC_wakeup_sleep()
@@ -422,9 +404,6 @@ uint16_t pec15_calc(uint8_t len, uint8_t *data)
 }
 
 
-
-
-
 void run_command(uint32_t cmd)
 {
 	if(cmd == 1){
@@ -433,19 +412,18 @@ void run_command(uint32_t cmd)
 		LTC_wakeup_sleep();
 		LTC_writeConfig(TOTAL_IC,tx_cfg);
 
-		LTC_wakeup_sleep();
-		LTC_startADC();
+		LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 		HAL_Delay(10);
-		LTC_wakeup_sleep();
+		LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 		int8_t errorcode = LTC_readReg_complete(0, TOTAL_IC,cell_codes);
 
-		if (errorcode == -1){
+		print_cells();
+
+		if (errorcode < 0){
 			Serial2_write('\n');
 			static uint8_t runCmd_msg1[] = "A PEC error was detected in the received data";
 			Serial2_writeBuf(runCmd_msg1);
 		}
-
-		print_cells();
 		HAL_Delay(500);
 
     } else{
@@ -455,18 +433,18 @@ void run_command(uint32_t cmd)
     }
 }
 
+
 void init_cfg()
 {
-  for(int i = 0; i<TOTAL_IC;i++)
-  {
-    tx_cfg[i][0] = 0xFE;
-    tx_cfg[i][1] = 0x00 ;
-    tx_cfg[i][2] = 0x00 ;
-    tx_cfg[i][3] = 0x00 ;
-    tx_cfg[i][4] = 0x00 ;
-    tx_cfg[i][5] = 0x00 ;
-  }
-
+	for(int i = 0; i<TOTAL_IC;i++)
+	{
+		tx_cfg[i][0] = 0xFE;
+		tx_cfg[i][1] = 0x00 ;
+		tx_cfg[i][2] = 0x00 ;
+		tx_cfg[i][3] = 0x00 ;
+		tx_cfg[i][4] = 0x00 ;
+		tx_cfg[i][5] = 0x00 ;
+	}
 }
 
 
@@ -507,7 +485,6 @@ void print_cells(){
 		}
 		Serial2_write('\n');
 	}
-
 }
 
 
