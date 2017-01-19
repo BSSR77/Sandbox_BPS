@@ -60,11 +60,10 @@ void LTC_startADC(){
 	command[2] = (uint8_t)(temp_pec >> 8);
 	command[3] = (uint8_t)(temp_pec);
 
-	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
-
 	output_low();
+	delayUS_ASM(10);				//wakeup the chip sleep_idle
 
-	int errorcode = spi_send(command,4);
+	int errorcode = spi_send_receive(command, 4);
 	if(errorcode == 0){
 		uint8_t adc_msg1[] = " adc yes ";
 		Serial2_writeBuf(adc_msg1);
@@ -109,7 +108,7 @@ void LTC_readReg_brief(uint8_t reg,uint8_t total_ic,uint8_t *data){
 		cmd[1] = 0x0A;
 	}
 
-	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
+//	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 
 	for (int current_ic = 0; current_ic<total_ic; current_ic++)
 	{
@@ -117,9 +116,11 @@ void LTC_readReg_brief(uint8_t reg,uint8_t total_ic,uint8_t *data){
 		temp_pec = pec15_calc(2, cmd);
 		cmd[2] = (uint8_t)(temp_pec >> 8);
 		cmd[3] = (uint8_t)(temp_pec);
-		output_low();
 
-		errorcode = spi_send(cmd, 4);
+		output_low();
+		delayUS_ASM(10);
+
+		errorcode = spi_send_receive(cmd, 4);
 		if(errorcode == 0){
 			uint8_t readReg1_msg1[] = " RDCV yes ";
 			Serial2_writeBuf(readReg1_msg1);
@@ -137,10 +138,11 @@ void LTC_readReg_brief(uint8_t reg,uint8_t total_ic,uint8_t *data){
 			LTC_readReg_brief(reg, total_ic, data);
 		}
 
-		output_high();
 		for(int i = 0; i<8; i++){
 			data[i] = RxBuffer[i];
 		}
+
+		output_high();
 	}
 }
 
@@ -232,28 +234,36 @@ void LTC_writeConfig(uint8_t total_ic,uint8_t config[][6])
 	cmd[2] = 0x3d;
 	cmd[3] = 0x6e;
 
-	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
+	//LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 
 	//2
 	cmd_index = 4;
-	for (uint8_t current_ic = total_ic; current_ic > 0; current_ic--)       // executes for each LTC6804 in stack,
-	{
-		for (uint8_t current_byte = 0; current_byte < BYTES_IN_REG; current_byte++) // executes for each byte in the CFGR register
-		{
-			// i is the byte counter
 
-			cmd[cmd_index] = config[current_ic-1][current_byte];    //adding the config data to the array to be sent
-			cmd_index = cmd_index + 1;
-		}
-		//3
-		temp_pec = (uint16_t)pec15_calc(BYTES_IN_REG, &config[current_ic-1][0]);// calculating the PEC for each board
-		cmd[cmd_index] = (uint8_t)(temp_pec >> 8);
-		cmd[cmd_index + 1] = (uint8_t)temp_pec;
-		cmd_index = cmd_index + 2;
-	}
+
+	//for more than one board
+//	for (uint8_t current_ic = total_ic; current_ic > 0; current_ic--)       // executes for each LTC6804 in stack,
+//	{
+//		for (uint8_t current_byte = 0; current_byte < BYTES_IN_REG; current_byte++) // executes for each byte in the CFGR register
+//		{
+//			// i is the byte counter
+//
+//			cmd[cmd_index] = config[current_ic-1][current_byte];    //adding the config data to the array to be sent
+//			cmd_index = cmd_index + 1;
+//		}
+//		//3
+//		temp_pec = (uint16_t)pec15_calc(BYTES_IN_REG, &config[current_ic-1][0]);// calculating the PEC for each board
+//		cmd[cmd_index] = (uint8_t)(temp_pec >> 8);
+//		cmd[cmd_index + 1] = (uint8_t)temp_pec;
+//		cmd_index = cmd_index + 2;
+//	}
+
+
 
 	//4
 	LTC_wakeup_sleep ();                                //This will guarantee that the LTC6804 SPI port is awake.This command can be removed.
+
+
+
 	//5
 	for (int current_ic = 0; current_ic<total_ic; current_ic++)
 	{
@@ -261,9 +271,11 @@ void LTC_writeConfig(uint8_t total_ic,uint8_t config[][6])
 		temp_pec = pec15_calc(2, cmd);
 		cmd[2] = (uint8_t)(temp_pec >> 8);
 		cmd[3] = (uint8_t)(temp_pec);
-		output_low();
 
-		int errorcode = spi_send(cmd, 4);
+		output_low();
+		delayUS_ASM(10);
+
+		int errorcode = spi_send_receive(cmd, 4);
 		if(errorcode == 0){
 			uint8_t wConfig_msg1[] = " WRCFG yes ";
 			Serial2_writeBuf(wConfig_msg1);
@@ -300,17 +312,18 @@ int LTC_readConfig(uint8_t total_ic, uint8_t r_config[][8]){
 	cmd[3] = 0x0A;
 
 	//2
-	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
+	//LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 	//3
 	for (int current_ic = 0; current_ic<total_ic; current_ic++){
 		cmd[0] = 0x80 + (current_ic<<3); //Setting address
 	    data_pec = pec15_calc(2, cmd);
 	    cmd[2] = (uint8_t)(data_pec >> 8);
 	    cmd[3] = (uint8_t)(data_pec);
+
 	    output_low();
+	    delayUS_ASM(10);
 
-
-		int errorcode = spi_send(cmd, 4);
+		int errorcode = spi_send_receive(cmd, 4);
 		if(errorcode == 0){
 			uint8_t rConfig_msg1[] = " RDCFG yes ";
 			Serial2_writeBuf(rConfig_msg1);
@@ -325,8 +338,8 @@ int LTC_readConfig(uint8_t total_ic, uint8_t r_config[][8]){
 			Serial2_writeBuf(rConfig_msg4);
 		}
 
-	    spi_receive();
 	    output_high();
+
 	}
 
 	for (uint8_t current_ic = 0; current_ic < total_ic; current_ic++) //executes for each LTC6804 in the stack
@@ -365,10 +378,11 @@ void LTC_clearCell(){
 	cmd[2] = (uint8_t)(cmd_pec >> 8);
 	cmd[3] = (uint8_t)(cmd_pec );
 
-	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
+//	LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
 
 	output_low();
-	spi_send(cmd,4);
+	delayUS_ASM(10);				//wakeup the chip sleep_idle
+	spi_send_receive(cmd, 4);
 	output_high();
 }
 
@@ -408,13 +422,11 @@ void run_command(uint32_t cmd)
 {
 	if(cmd == 1){
 
-		//Serial.println("transmit 'm' to quit");
-		LTC_wakeup_sleep();
-		LTC_writeConfig(TOTAL_IC,tx_cfg);
-
-		LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
+		LTC_wakeup_idle();
+		LTC_startADC();
 		HAL_Delay(10);
-		LTC_wakeup_idle(); //iospi stuff not sure if it will work without it
+		LTC_wakeup_idle();
+
 		int8_t errorcode = LTC_readReg_complete(0, TOTAL_IC,cell_codes);
 
 		print_cells();

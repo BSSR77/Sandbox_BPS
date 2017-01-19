@@ -91,7 +91,6 @@ int main(void)
   MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
-  GPIOSPI_Reconfig();
   Serial2_begin();
   HAL_GPIO_WritePin (LTC_CS_GPIO_Port, LTC_CS_Pin,GPIO_PIN_SET);
   //uint8_t setup_msg1[] = "setup complete";
@@ -303,7 +302,7 @@ static void GPIOSPI_Reconfig(){
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
-	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_ENABLE;
+	//hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_ENABLE;
 }
 /* USER CODE END 4 */
 
