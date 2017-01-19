@@ -36,7 +36,6 @@
 
 /* USER CODE BEGIN Includes */
 // NEW MAIN FILE!
-#include "serial.h"
 #include "LTC6804.h"
 /* USER CODE END Includes */
 

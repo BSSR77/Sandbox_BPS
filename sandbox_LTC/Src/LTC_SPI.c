@@ -13,26 +13,25 @@
 
 extern SPI_HandleTypeDef hspi1;
 uint16_t size = 8;
+uint8_t TxBuffer[10];
+uint8_t RxBuffer[4];
 
-
-
+//pull cs low start communication
 void output_low(){
 	HAL_GPIO_WritePin(LTC_CS_GPIO_Port , LTC_CS_Pin, GPIO_PIN_RESET);
-
-	//uint8_t outputmsg1[] = "output_low success";
-	//Serial2_writeBuf(outputmsg1);
-	//pull ltc6804_cs low
 }
 
 
-
+//pull cs high end communication
 void output_high(){
-	while( hspi1.State == HAL_SPI_STATE_BUSY );  // wait xmission complete
 	HAL_GPIO_WritePin(LTC_CS_GPIO_Port , LTC_CS_Pin, GPIO_PIN_SET);
-
-	//uint8_t outputmsg2[] = "output_high success";
-	//Serial2_writeBuf(outputmsg2);
-	//pull ltc6804_cs high
 }
 
 
+void spi_TransmitReceive(uint8_t*cmd){
+	HAL_StatusTypeDef errorcode;
+	errorcode = HAL_SPI_TransmitReceive(&hspi1,(uint8_t*)TxBuffer,(uint8_t*)RxBuffer,4,5000);
+
+	if(errorcode == HAL_OK)	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_3);
+
+}

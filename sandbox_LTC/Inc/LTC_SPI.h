@@ -29,4 +29,6 @@ void output_low();
 
 void output_high();
 
+void spi_TransmitReceive(uint8_t*cmd);
+
 #endif
