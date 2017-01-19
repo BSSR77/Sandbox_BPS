@@ -62,7 +62,7 @@ static void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-static void GPIOSPI_Reconfig(void);
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -91,24 +91,17 @@ int main(void)
   MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
-  Serial2_begin();
-  HAL_GPIO_WritePin (LTC_CS_GPIO_Port, LTC_CS_Pin,GPIO_PIN_SET);
+
   //uint8_t setup_msg1[] = "setup complete";
   //Serial2_writeBuf(setup_msg1);
-  LTC6804();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  uint8_t setup_msg1[] = "begin...      ";
-	  Serial2_writeBuf(setup_msg1);
-//	  HAL_Delay(100);
-//	  HAL_GPIO_WritePin (LED3_GPIO_GPIO_Port, LED3_GPIO_Pin,GPIO_PIN_RESET);
-//	  HAL_Delay(2000);
-//	  HAL_GPIO_WritePin (LED3_GPIO_GPIO_Port, LED3_GPIO_Pin,GPIO_PIN_SET);
-	  LTC6804_inloop();
+
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
@@ -288,22 +281,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-static void GPIOSPI_Reconfig(){
 
-	GPIO_InitTypeDef GPIO_InitStruct;
-
-	GPIO_InitStruct.Pin = LTC_CS_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-
-	GPIO_InitStruct.Pin = LED3_GPIO_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-
-	//hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_ENABLE;
-}
 /* USER CODE END 4 */
 
 /**

@@ -29,10 +29,4 @@ void output_low();
 
 void output_high();
 
-//int spi_send(uint8_t * data, uint8_t size);
-
-//int spi_receive();
-
-int spi_send_receive(uint8_t *data, uint8_t size);
-
-#endif /* LTC_SPI_H_ */
+#endif

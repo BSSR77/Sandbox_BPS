@@ -13,15 +13,6 @@
 
 extern SPI_HandleTypeDef hspi1;
 uint16_t size = 8;
-uint8_t RxBuffer[8];
-uint8_t TxBuffer[8];
-
-
-void clrFIFO(){
-	while(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_RXNE)){
-		uint32_t garbage = hspi1.Instance->DR;
-	}
-}
 
 
 
@@ -45,56 +36,3 @@ void output_high(){
 }
 
 
-
-//int spi_send(uint8_t *data, uint8_t size){
-////	output_low();
-////	delayUS_ASM(10);				//wakeup the chip sleep_idle
-//	uint8_t TxBuffer[8];			//total_ic is one thus 8*total_ic = 8
-//
-//	for(uint8_t i = 0; i<size; i++){
-//		TxBuffer[i] = data[i];
-//	}
-//
-//	HAL_StatusTypeDef errorcode;
-//	errorcode = HAL_SPI_Transmit(&hspi1,TxBuffer,size,500);	//timeout is 5 seconds(referenced from example spi code)
-//
-////	output_high();
-//
-//	return (int)errorcode;
-//	//0 - successful
-//	//1 - unsuccessful
-//	//2 - busy
-//}
-//
-//
-//
-//int spi_receive(){
-//	clrFIFO();
-////	output_low();
-////	delayUS_ASM(10);
-//	HAL_StatusTypeDef errorcode;
-//	errorcode = HAL_SPI_Receive(&hspi1,RxBuffer,size,500);	//timeout is 5 seconds(referenced from example spi code)
-//
-////	output_high();
-//	return (int)errorcode;
-//	//0 - successful
-//	//1 - unsuccessful
-//	//2 - busy
-//}
-
-int spi_send_receive(uint8_t *data, uint8_t size){
-
-	clrFIFO();
-
-	for(uint8_t i = 0; i<size; i++){
-		TxBuffer[i] = data[i];
-	}
-
-	HAL_StatusTypeDef errorcode;
-	errorcode = HAL_SPI_Receive(&hspi1,TxBuffer,RxBuffer,500);
-
-
-
-	return (int)errorcode;
-
-}
