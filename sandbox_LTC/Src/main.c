@@ -90,7 +90,7 @@ int main(void)
   MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
-
+  testfun();
   //uint8_t setup_msg1[] = "setup complete";
   //Serial2_writeBuf(setup_msg1);
 

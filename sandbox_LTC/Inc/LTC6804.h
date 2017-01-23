@@ -39,14 +39,18 @@ static const unsigned int crc15Table[256] = {0x0,0xc599, 0xceab, 0xb32, 0xd8cf, 
     0x585a, 0x8ba7, 0x4e3e, 0x450c, 0x8095
                                             };
 
-static uint8_t LTC_RDCFG[2] = {0b00000000,0b00000010};
-static uint8_t LTC_WRCFG[2] = {0b00000000,0b00000001};
-static uint8_t LTC_RDCVA[2] = {0b00000000,0b00000100};
-static uint8_t LTC_RDCVB[2] = {0b00000000,0b00000110};
-static uint8_t LTC_RDCVC[2] = {0b00000000,0b00001000};
-static uint8_t LTC_RDCVS[2] = {0b00000000,0b00001010};
+static const uint8_t LTC_RDCFG[2] = {0b00000000,0b00000010};
+static const uint8_t LTC_WRCFG[2] = {0b00000000,0b00000001};
+static const uint8_t LTC_RDCVA[2] = {0b00000000,0b00000100};
+static const uint8_t LTC_RDCVB[2] = {0b00000000,0b00000110};
+static const uint8_t LTC_RDCVC[2] = {0b00000000,0b00001000};
+static const uint8_t LTC_RDCVS[2] = {0b00000000,0b00001010};
 
 
+
+void testfun();
+
+void dummyByte();
 
 void readConfig();
 

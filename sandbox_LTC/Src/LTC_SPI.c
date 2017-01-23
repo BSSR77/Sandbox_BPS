@@ -13,8 +13,7 @@
 
 extern SPI_HandleTypeDef hspi1;
 uint16_t size = 8;
-uint8_t TxBuffer[10];
-uint8_t RxBuffer[4];
+
 
 //pull cs low start communication
 void output_low(){
@@ -28,7 +27,7 @@ void output_high(){
 }
 
 
-void spi_TransmitReceive(uint8_t*cmd){
+void spi_TransmitReceive(uint8_t*cmd,uint8_t size){
 	HAL_StatusTypeDef errorcode;
 	errorcode = HAL_SPI_TransmitReceive(&hspi1,(uint8_t*)TxBuffer,(uint8_t*)RxBuffer,4,5000);
 

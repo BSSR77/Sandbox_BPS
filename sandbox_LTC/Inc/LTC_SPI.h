@@ -25,10 +25,13 @@ asm volatile ( "MOV R0,%[loops]\n\t"\
 //set the number to 20 from 13-3000
 
 
+uint8_t TxBuffer[10];
+uint8_t RxBuffer[4];
+
 void output_low();
 
 void output_high();
 
-void spi_TransmitReceive(uint8_t*cmd);
+void spi_TransmitReceive(uint8_t*cmd,uint8_t size);
 
 #endif
